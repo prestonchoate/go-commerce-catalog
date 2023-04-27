@@ -25,7 +25,7 @@ func GetAll() ([]models.Product, error) {
 		var product models.Product
 		product, err := mapProductData(rows, &product)
 		if err != nil {
-			log.Fatal(err.Error())
+			log.Print(err.Error())
 			return products, fmt.Errorf("Could not parse rows into products")
 		}
 		products = append(products, product)
@@ -40,8 +40,8 @@ func GetProduct(product_id int) (models.Product, error) {
 	var product models.Product
 	product, err := mapProductData(row, &product)
 	if err != nil {
-		log.Fatalf(err.Error())
-		return product, fmt.Errorf("Failed to retrieve product with ID: %v", product_id)
+		log.Print(err.Error())
+		return product, fmt.Errorf("failed to retrieve product with ID: %v", product_id)
 	}
 	return product, nil
 }
@@ -53,7 +53,7 @@ func GetProductBySku(sku string) (models.Product, error) {
 	var product models.Product
 	product, err := mapProductData(row, &product)
 	if err != nil {
-		log.Fatalf(err.Error())
+		log.Print(err.Error())
 		return product, fmt.Errorf("Failed to retrieve product with SKU: %v", sku)
 	}
 	return product, nil
@@ -69,7 +69,7 @@ func mapProductData(row services.RowScanner, product *models.Product) (models.Pr
 		&product.CreatedAt,
 		&product.UpdatedAt)
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Print(err.Error())
 		return *product, fmt.Errorf("Failed to map row data to product")
 	}
 	return *product, nil
