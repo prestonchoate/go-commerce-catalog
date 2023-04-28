@@ -66,6 +66,37 @@ func HandleGetProduct(w http.ResponseWriter, r *http.Request) {
 	w.Write(json_resp)
 }
 
+func HandleUpdateProduct(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	original_product, ok := ctx.Value("product").(*models.Product)
+	if !ok {
+		log.Print("Product not found in request context")
+		http.Error(w, http.StatusText(http.StatusUnprocessableEntity), http.StatusUnprocessableEntity)
+	}
+	var request_product models.Product
+	err := json.NewDecoder(r.Body).Decode(&request_product)
+	if err != nil {
+		log.Print("Could not parse request body as product")
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+	} 
+	updated_product, err := product_repository.UpdateProductById(*original_product, request_product)
+	if err != nil {
+		log.Print(err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+	}
+	resp := make(map[string]any)
+	resp["product"] = updated_product
+	json_resp, err := generateResponse(resp)
+	if err != nil {
+		log.Printf("Could not convert product id %v into JSON", updated_product.ID)
+		http.Error(w, http.StatusText(http.StatusUnprocessableEntity), http.StatusUnprocessableEntity)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(json_resp)
+}
+
 func generateResponse(resp map[string]any) ([]byte, error){
 	json_resp, err := json.Marshal(resp)
 	if (err != nil) {

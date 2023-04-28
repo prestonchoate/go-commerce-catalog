@@ -54,9 +54,29 @@ func GetProductBySku(sku string) (models.Product, error) {
 	product, err := mapProductData(row, &product)
 	if err != nil {
 		log.Print(err.Error())
-		return product, fmt.Errorf("Failed to retrieve product with SKU: %v", sku)
+		return product, fmt.Errorf("failed to retrieve product with SKU: %v", sku)
 	}
 	return product, nil
+}
+
+func UpdateProductById(original_product models.Product, input_product models.Product) (models.Product, error) {
+	db := services.GetDB()
+	query := fmt.Sprintf(
+		"INSERT INTO %v (sku, name, price, description) VALUES (%v, %v, %v, %v) WHERE id = %v",
+		table_name, 
+		input_product.SKU, 
+		input_product.Name, 
+		input_product.Price, 
+		input_product.Description,
+		original_product.ID)
+	// TODO: Make this a transaction
+	// TODO: Check result to make sure the updated ID is correct
+	_, err := db.Exec(query)
+	if err != nil {
+		log.Print(err.Error())
+		return input_product, fmt.Errorf("could not update product")
+	}
+	return input_product, nil
 }
 
 func mapProductData(row services.RowScanner, product *models.Product) (models.Product, error) {

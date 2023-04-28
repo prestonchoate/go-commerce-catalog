@@ -39,7 +39,7 @@ func main() {
 		r.Route("/{productID}", func(r chi.Router) {
 			r.Use(product_handler.ProductsCtx)
 			r.Get("/", product_handler.HandleGetProduct)
-			//r.Put("/", handler for PUT /products/123)
+			r.Put("/", product_handler.HandleUpdateProduct)
 			//r.Delete("/", handler for DELETE /products/123)
 		})
 	})
@@ -52,7 +52,6 @@ func main() {
 	if (errors.Is(err, http.ErrServerClosed)) {
 		fmt.Printf("server closed\n")
 	} else if err != nil {
-		fmt.Printf("error starting server %s\n", err)
-		os.Exit(1)
+		log.Fatalf("error starting server %s\n", err)
 	}
 }
