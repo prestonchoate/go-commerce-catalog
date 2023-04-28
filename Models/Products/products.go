@@ -26,7 +26,7 @@ func GetAll() ([]models.Product, error) {
 		product, err := mapProductData(rows, &product)
 		if err != nil {
 			log.Print(err.Error())
-			return products, fmt.Errorf("Could not parse rows into products")
+			return products, fmt.Errorf("could not parse rows into products")
 		}
 		products = append(products, product)
 	}
