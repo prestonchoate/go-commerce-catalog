@@ -48,7 +48,7 @@ func GetProduct(product_id int) (models.Product, error) {
 
 func GetProductBySku(sku string) (models.Product, error) {
 	db := services.GetDB()
-	query := fmt.Sprintf("SELECT * FROM %v WHERE sku = %v", table_name, sku)
+	query := fmt.Sprintf("SELECT * FROM %v WHERE sku = \"%v\"", table_name, sku)
 	row := db.QueryRow(query)
 	var product models.Product
 	product, err := mapProductData(row, &product)
@@ -61,14 +61,23 @@ func GetProductBySku(sku string) (models.Product, error) {
 
 func UpdateProductById(original_product models.Product, input_product models.Product) (models.Product, error) {
 	db := services.GetDB()
+	// query := fmt.Sprintf(
+	// 	"INSERT INTO %v (sku, name, price, description) VALUES (%v, %v, %v, %v) WHERE id = %v",
+	// 	table_name, 
+	// 	fmt.Sprintf("\"%v\"",input_product.SKU), 
+	// 	fmt.Sprintf("\"%v\"",input_product.Name), 
+	// 	fmt.Sprintf("\"%v\"",input_product.Price), 
+	// 	fmt.Sprintf("\"%v\"",input_product.Description),
+	// 	fmt.Sprintf("\"%v\"",original_product.ID))
 	query := fmt.Sprintf(
-		"INSERT INTO %v (sku, name, price, description) VALUES (%v, %v, %v, %v) WHERE id = %v",
-		table_name, 
+		"UPDATE %v SET sku = \"%v\", name = \"%v\", price = %v, description = \"%v\" WHERE id = %v",
+		table_name,
 		input_product.SKU, 
 		input_product.Name, 
 		input_product.Price, 
 		input_product.Description,
 		original_product.ID)
+	log.Printf("Query to run: %v", query)
 	// TODO: Make this a transaction
 	// TODO: Check result to make sure the updated ID is correct
 	_, err := db.Exec(query)
@@ -76,7 +85,9 @@ func UpdateProductById(original_product models.Product, input_product models.Pro
 		log.Print(err.Error())
 		return input_product, fmt.Errorf("could not update product")
 	}
-	return input_product, nil
+	// TODO: This is a bit hacky and probably needs some other solution.
+	// TODO: Updated at time isn't being auto updated in the DB
+	return GetProductBySku(input_product.SKU)
 }
 
 func mapProductData(row services.RowScanner, product *models.Product) (models.Product, error) {
@@ -90,7 +101,7 @@ func mapProductData(row services.RowScanner, product *models.Product) (models.Pr
 		&product.UpdatedAt)
 	if err != nil {
 		log.Print(err.Error())
-		return *product, fmt.Errorf("Failed to map row data to product")
+		return *product, fmt.Errorf("failed to map row data to product")
 	}
 	return *product, nil
 }
