@@ -13,13 +13,6 @@ import (
 	product_repository "github.com/prestonchoate/go-commerce-catalog/Models/Products"
 )
 
-func HandleProducts(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Handling %v to %v", r.Method, r.RequestURI)
-	if r.Method == http.MethodGet {
-		HandleGetAllProducts(w, r)
-	}
-}
-
 func HandleGetAllProducts(w http.ResponseWriter, r *http.Request) {
 	resp := make(map[string]any)
 	products, err := product_repository.GetAll()
@@ -39,10 +32,38 @@ func HandleGetAllProducts(w http.ResponseWriter, r *http.Request) {
 	w.Write(json_resp)
 }
 
-func handlePostProducts(w http.ResponseWriter, r *http.Request) {
+func HandlePostProducts(w http.ResponseWriter, r *http.Request) {
 	// validate body contains valid product struct
+	resp := make(map[string]any)
+	var request_product models.Product
+	err := json.NewDecoder(r.Body).Decode(&request_product)
+	if err != nil {
+		log.Print("Failed to create product")
+		resp["error"] = err.Error()
+		json_resp, _ := generateResponse(resp)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write(json_resp)
+		return
+	}
+
 	// try to do db insert
+	new_product, err := product_repository.CreateProduct(request_product)
+	if err != nil {
+		log.Print("Failed to create product")
+		resp["error"] = err.Error()
+		json_resp, _ := generateResponse(resp)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadGateway)
+		w.Write(json_resp)
+		return
+	}
 	// return new product to client
+	resp["product"] = new_product
+	json_rep, _ := generateResponse(resp)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	w.Write(json_rep)
 }
 
 func HandleGetProduct(w http.ResponseWriter, r *http.Request) {
@@ -121,7 +142,6 @@ func ProductsCtx(next http.Handler) http.Handler {
 			return
 		}
 		ctx := context.WithValue(r.Context(), "product", &product)
-		//printContextInternals(ctx, true)
 		next.ServeHTTP(w, r.WithContext(ctx))
   })
 }

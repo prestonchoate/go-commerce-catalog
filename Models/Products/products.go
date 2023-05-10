@@ -8,14 +8,14 @@ import (
 	services "github.com/prestonchoate/go-commerce-catalog/Services"
 )
 
-var table_name = "products"
+const TABLE_NAME = "products"
 
 func GetAll() ([]models.Product, error) {
 	db := services.GetDB()
-	query := fmt.Sprintf("SELECT * FROM %v", table_name)
+	query := fmt.Sprintf("SELECT * FROM %v", TABLE_NAME)
 	rows, err := db.Query(query)
 	if err != nil {
-		log.Printf("Could not get data from %v", table_name)
+		log.Printf("Could not get data from %v", TABLE_NAME)
 		log.Print(err.Error())
 		log.Print(db.Stats())
 		return nil, err
@@ -35,7 +35,7 @@ func GetAll() ([]models.Product, error) {
 
 func GetProduct(product_id int) (models.Product, error) {
 	db := services.GetDB()
-	query := fmt.Sprintf("SELECT * FROM %v WHERE id = %v", table_name, product_id)
+	query := fmt.Sprintf("SELECT * FROM %v WHERE id = %v", TABLE_NAME, product_id)
 	row := db.QueryRow(query)
 	var product models.Product
 	product, err := mapProductData(row, &product)
@@ -48,7 +48,7 @@ func GetProduct(product_id int) (models.Product, error) {
 
 func GetProductBySku(sku string) (models.Product, error) {
 	db := services.GetDB()
-	query := fmt.Sprintf("SELECT * FROM %v WHERE sku = \"%v\"", table_name, sku)
+	query := fmt.Sprintf("SELECT * FROM %v WHERE sku = \"%v\"", TABLE_NAME, sku)
 	row := db.QueryRow(query)
 	var product models.Product
 	product, err := mapProductData(row, &product)
@@ -59,25 +59,35 @@ func GetProductBySku(sku string) (models.Product, error) {
 	return product, nil
 }
 
+func CreateProduct(input_product models.Product) (models.Product, error) {
+	db := services.GetDB()
+	query := fmt.Sprintf(
+		"INSERT INTO %v (sku, name, price, description) VALUES (%v, %v, %v, %v)",
+		TABLE_NAME, 
+		fmt.Sprintf("\"%v\"",input_product.SKU), 
+		fmt.Sprintf("\"%v\"",input_product.Name), 
+		fmt.Sprintf("\"%v\"",input_product.Price), 
+		fmt.Sprintf("\"%v\"",input_product.Description))
+	result, err := db.Exec(query)
+	if err != nil {
+		log.Print(err.Error())
+		return input_product, fmt.Errorf("could not create new product")
+	}
+	new_id, _ := result.LastInsertId()
+	input_product.ID = int(new_id)
+	return input_product, nil
+}
+
 func UpdateProductById(original_product models.Product, input_product models.Product) (models.Product, error) {
 	db := services.GetDB()
-	// query := fmt.Sprintf(
-	// 	"INSERT INTO %v (sku, name, price, description) VALUES (%v, %v, %v, %v) WHERE id = %v",
-	// 	table_name, 
-	// 	fmt.Sprintf("\"%v\"",input_product.SKU), 
-	// 	fmt.Sprintf("\"%v\"",input_product.Name), 
-	// 	fmt.Sprintf("\"%v\"",input_product.Price), 
-	// 	fmt.Sprintf("\"%v\"",input_product.Description),
-	// 	fmt.Sprintf("\"%v\"",original_product.ID))
 	query := fmt.Sprintf(
 		"UPDATE %v SET sku = \"%v\", name = \"%v\", price = %v, description = \"%v\" WHERE id = %v",
-		table_name,
+		TABLE_NAME,
 		input_product.SKU, 
 		input_product.Name, 
 		input_product.Price, 
 		input_product.Description,
 		original_product.ID)
-	log.Printf("Query to run: %v", query)
 	// TODO: Make this a transaction
 	// TODO: Check result to make sure the updated ID is correct
 	_, err := db.Exec(query)

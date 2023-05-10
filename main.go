@@ -15,10 +15,12 @@ import (
 	product_handler "github.com/prestonchoate/go-commerce-catalog/Handlers/Products"
 )
 
+const DEFAULT_PORT = "5000"
+
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Could not load from .env")
+		log.Print("Could not load from .env")
 	}
 
 	r := chi.NewRouter()
@@ -35,6 +37,7 @@ func main() {
 
 	r.Route("/products", func(r chi.Router) {
 		r.Get("/", product_handler.HandleGetAllProducts)
+		r.Post("/", product_handler.HandlePostProducts)
 		//To do a GET on a Product ID
 		r.Route("/{productID}", func(r chi.Router) {
 			r.Use(product_handler.ProductsCtx)
@@ -45,9 +48,12 @@ func main() {
 	})
 
 	port := os.Getenv("PORT")
+	if port == "" {
+		port = DEFAULT_PORT
+	}
 
 	log.Printf("Starting server on port: %v", port)
-	err = http.ListenAndServe(fmt.Sprintf("0.0.0.0:%v", port), r)
+	err = http.ListenAndServe(fmt.Sprintf(":%v", port), r)
 
 	if (errors.Is(err, http.ErrServerClosed)) {
 		fmt.Printf("server closed\n")
