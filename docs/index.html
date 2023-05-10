@@ -1,32 +1,33 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 	<head>
-		<!-- Load the latest Swagger UI code and style from npm using unpkg.com -->
-		<script src="https://unpkg.com/swagger-ui-dist@3/swagger-ui-bundle.js"></script>
-		<link
-			rel="stylesheet"
-			type="text/css"
-			href="https://unpkg.com/swagger-ui-dist@3/swagger-ui.css"
-		/>
-		<title>Go Commerce Catalog API</title>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+		<title>Go Commerce Catlog Microservice</title>
+		<link rel="stylesheet" href="style.css" />
 	</head>
 	<body>
-		<div id="swagger-ui"></div>
-		<!-- Div to hold the UI component -->
-		<script>
-			window.onload = function () {
-				// Begin Swagger UI call region
-				const ui = SwaggerUIBundle({
-					url: "go-commerce-catalog-openapi-spec.yml", //Location of Open API spec in the repo
-					dom_id: "#swagger-ui",
-					deepLinking: true,
-					presets: [
-						SwaggerUIBundle.presets.apis,
-						SwaggerUIBundle.SwaggerUIStandalonePreset,
-					],
-					plugins: [SwaggerUIBundle.plugins.DownloadUrl],
-				});
-				window.ui = ui;
-			};
-		</script>
+		<div id="main">
+			<div class="header">
+				<h1>Go Commerce Catalog</h1>
+			</div>
+			<div class="content">
+				<p>
+					This is a simple catalog microservice I created to help learn Go. The
+					project utilizes the
+					<a href="https://github.com/go-chi/chi" target="_blank"
+						>go-chi router</a
+					>
+					for some of its more complex pattern matching and route
+					paramaterization.
+				</p>
+				<p>
+					There is an OpenAPI specification page available for this project. You
+					can view it <a href="./spec/index.html">here</a>.
+				</p>
+			</div>
+		</div>
+		<div id="footer"></div>
 	</body>
 </html>
