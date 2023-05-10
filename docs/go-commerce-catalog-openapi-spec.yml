@@ -1,0 +1,256 @@
+openapi: 3.0.0
+info:
+  title: Go Commerce Catalog
+  version: 1.0.0
+servers:
+  - url: http://{{base_url}}
+paths:
+  /products:
+    get:
+      tags:
+        - default
+      summary: Get Products
+      responses:
+        '200':
+          description: OK
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            Date:
+              schema:
+                type: string
+                example: Wed, 10 May 2023 16:38:28 GMT
+            Content-Length:
+              schema:
+                type: integer
+                example: '439'
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                products:
+                  - id: 1
+                    sku: TEST
+                    name: Test Product
+                    price: 19.99
+                    description: This is a test product with updated description again
+                    created_at: '2023-04-27T03:09:57Z'
+                    updated_at: '2023-04-27T03:09:57Z'
+                  - id: 2
+                    sku: TEST_CREATE
+                    name: Test Product Created from POST
+                    price: 19.99
+                    description: This is a test product with updated description again
+                    created_at: '2023-05-10T00:05:35Z'
+                    updated_at: '2023-05-10T00:05:35Z'
+    post:
+      tags:
+        - default
+      summary: Create Product
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                sku: NEW_PRODUCT
+                name: Test Product Created from POST
+                price: 29.48
+                description: This is a test product created for example purposes
+      responses:
+        '201':
+          description: Created
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            Date:
+              schema:
+                type: string
+                example: Wed, 10 May 2023 16:39:10 GMT
+            Content-Length:
+              schema:
+                type: integer
+                example: '234'
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                product:
+                  id: 5
+                  sku: NEW_PRODUCT
+                  name: Test Product Created from POST
+                  price: 29.48
+                  description: This is a test product created for example purposes
+                  created_at: '0001-01-01T00:00:00Z'
+                  updated_at: '0001-01-01T00:00:00Z'
+  /products/{id}:
+    get:
+      tags:
+        - default
+      summary: Get Product By ID
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: integer
+          required: true
+          example: '1'
+      responses:
+        '200':
+          description: OK
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            Date:
+              schema:
+                type: string
+                example: Wed, 10 May 2023 16:39:40 GMT
+            Content-Length:
+              schema:
+                type: integer
+                example: '211'
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                product:
+                  id: 1
+                  sku: TEST
+                  name: Test Product
+                  price: 19.99
+                  description: This is a test product with updated description again
+                  created_at: '2023-04-27T03:09:57Z'
+                  updated_at: '2023-04-27T03:09:57Z'
+        '404':
+          description: Not Found
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: text/plain; charset=utf-8
+            X-Content-Type-Options:
+              schema:
+                type: string
+                example: nosniff
+            Date:
+              schema:
+                type: string
+                example: Wed, 10 May 2023 16:39:52 GMT
+            Content-Length:
+              schema:
+                type: integer
+                example: '10'
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |
+                Not Found
+    put:
+      tags:
+        - default
+      summary: Update Product
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                sku: TEST
+                name: Test Product
+                price: 19.99
+                description: This is a test product with updated description again
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: integer
+          required: true
+          example: '1'
+      responses:
+        '200':
+          description: OK
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+            Date:
+              schema:
+                type: string
+                example: Wed, 10 May 2023 16:40:07 GMT
+            Content-Length:
+              schema:
+                type: integer
+                example: '211'
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                product:
+                  id: 1
+                  sku: TEST
+                  name: Test Product
+                  price: 19.99
+                  description: This is a test product with updated description again
+                  created_at: '2023-04-27T03:09:57Z'
+                  updated_at: '2023-04-27T03:09:57Z'
+    delete:
+      tags:
+        - default
+      summary: Delete Product
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: integer
+          required: true
+          example: '5'
+      responses:
+        '204':
+          description: No Content
+          headers:
+            Date:
+              schema:
+                type: string
+                example: Wed, 10 May 2023 16:40:51 GMT
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: null
+        '404':
+          description: Not Found
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: text/plain; charset=utf-8
+            X-Content-Type-Options:
+              schema:
+                type: string
+                example: nosniff
+            Date:
+              schema:
+                type: string
+                example: Wed, 10 May 2023 16:40:23 GMT
+            Content-Length:
+              schema:
+                type: integer
+                example: '10'
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |
+                Not Found
