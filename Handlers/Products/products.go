@@ -34,6 +34,7 @@ func HandleGetAllProducts(w http.ResponseWriter, r *http.Request) {
 
 func HandlePostProducts(w http.ResponseWriter, r *http.Request) {
 	// validate body contains valid product struct
+	// TODO: this does not currently verify all required fields are present in json body
 	resp := make(map[string]any)
 	var request_product models.Product
 	err := json.NewDecoder(r.Body).Decode(&request_product)
@@ -85,6 +86,23 @@ func HandleGetProduct(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(json_resp)
+}
+
+func HandleDeleteProduct(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	product, ok := ctx.Value("product").(*models.Product)
+	if !ok {
+		log.Print("Product not found in request context")
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	err := product_repository.DeleteProduct(product)
+	if err != nil {
+		log.Print("Could not delete product")
+		http.Error(w, http.StatusText(http.StatusBadGateway), http.StatusBadGateway)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func HandleUpdateProduct(w http.ResponseWriter, r *http.Request) {

@@ -67,7 +67,8 @@ func CreateProduct(input_product models.Product) (models.Product, error) {
 		fmt.Sprintf("\"%v\"",input_product.SKU), 
 		fmt.Sprintf("\"%v\"",input_product.Name), 
 		fmt.Sprintf("\"%v\"",input_product.Price), 
-		fmt.Sprintf("\"%v\"",input_product.Description))
+		fmt.Sprintf("\"%v\"",input_product.Description),
+	)
 	result, err := db.Exec(query)
 	if err != nil {
 		log.Print(err.Error())
@@ -76,6 +77,21 @@ func CreateProduct(input_product models.Product) (models.Product, error) {
 	new_id, _ := result.LastInsertId()
 	input_product.ID = int(new_id)
 	return input_product, nil
+}
+
+func DeleteProduct(product *models.Product) error {
+	db := services.GetDB()
+	query := fmt.Sprintf(
+		"DELETE FROM %v WHERE ID = %v",
+		TABLE_NAME,
+		product.ID,
+	)
+	_, err := db.Exec(query)
+	if err != nil {
+		log.Print(err.Error())
+		return fmt.Errorf("could not delete product with ID: %v", product.ID)
+	}
+	return nil
 }
 
 func UpdateProductById(original_product models.Product, input_product models.Product) (models.Product, error) {

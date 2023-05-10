@@ -43,7 +43,7 @@ func main() {
 			r.Use(product_handler.ProductsCtx)
 			r.Get("/", product_handler.HandleGetProduct)
 			r.Put("/", product_handler.HandleUpdateProduct)
-			//r.Delete("/", handler for DELETE /products/123)
+			r.Delete("/", product_handler.HandleDeleteProduct)
 		})
 	})
 
