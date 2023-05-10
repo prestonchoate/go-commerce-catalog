@@ -21,10 +21,10 @@ func GetDB() *sql.DB {
 	}
     db_conn, err = sql.Open("mysql", os.Getenv("DSN"))
     if err != nil {
-        log.Fatalf("failed to connect: %v", err)
+        log.Printf("failed to connect: %v", err)
     }
     if err := db_conn.Ping(); err != nil {
-        log.Fatalf("failed to ping: %v", err)
+        log.Printf("failed to ping: %v", err)
     }
 	return db_conn
 }
