@@ -38,7 +38,6 @@ func main() {
 	r.Route("/products", func(r chi.Router) {
 		r.Get("/", product_handler.HandleGetAllProducts)
 		r.Post("/", product_handler.HandlePostProducts)
-		//To do a GET on a Product ID
 		r.Route("/{productID}", func(r chi.Router) {
 			r.Use(product_handler.ProductsCtx)
 			r.Get("/", product_handler.HandleGetProduct)
