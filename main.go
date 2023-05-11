@@ -41,7 +41,7 @@ func main() {
 		r.Route("/{productID}", func(r chi.Router) {
 			r.Use(product_handler.ProductsCtx)
 			r.Get("/", product_handler.HandleGetProduct)
-			r.Put("/", product_handler.HandleUpdateProduct)
+			r.Put("/", product_handler.HandlePutProduct)
 			r.Delete("/", product_handler.HandleDeleteProduct)
 		})
 	})
