@@ -3,7 +3,6 @@ package products
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"log"
 	"net/http"
 	"strconv"
@@ -19,17 +18,11 @@ func HandleGetAllProducts(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Print("Failed to retrieve products")
 		resp["error"] = err.Error()
-		json_resp, _ := generateResponse(resp)
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadGateway)
-		w.Write(json_resp)
+		writeResponse(resp, w, http.StatusBadGateway)
 		return
 	}
 	resp["products"] = products
-	json_resp, _ := generateResponse(resp)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(json_resp)
+	writeResponse(resp, w, http.StatusOK)
 }
 
 func HandlePostProducts(w http.ResponseWriter, r *http.Request) {
@@ -41,10 +34,7 @@ func HandlePostProducts(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Print("Failed to create product")
 		resp["error"] = err.Error()
-		json_resp, _ := generateResponse(resp)
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write(json_resp)
+		writeResponse(resp, w, http.StatusBadRequest)
 		return
 	}
 
@@ -53,18 +43,12 @@ func HandlePostProducts(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Print("Failed to create product")
 		resp["error"] = err.Error()
-		json_resp, _ := generateResponse(resp)
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadGateway)
-		w.Write(json_resp)
+		writeResponse(resp, w, http.StatusBadGateway)
 		return
 	}
 	// return new product to client
 	resp["product"] = new_product
-	json_rep, _ := generateResponse(resp)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	w.Write(json_rep)
+	writeResponse(resp, w, http.StatusCreated)
 }
 
 func HandleGetProduct(w http.ResponseWriter, r *http.Request) {
@@ -77,15 +61,7 @@ func HandleGetProduct(w http.ResponseWriter, r *http.Request) {
 	}
 	resp := make(map[string]any)
 	resp["product"] = product
-	json_resp, err := generateResponse(resp)
-	if err != nil {
-		log.Printf("Could not convert product id %v into JSON", product.ID)
-		http.Error(w, http.StatusText(http.StatusUnprocessableEntity), http.StatusUnprocessableEntity)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(json_resp)
+	writeResponse(resp, w, http.StatusOK)
 }
 
 func HandleDeleteProduct(w http.ResponseWriter, r *http.Request) {
@@ -125,24 +101,19 @@ func HandleUpdateProduct(w http.ResponseWriter, r *http.Request) {
 	}
 	resp := make(map[string]any)
 	resp["product"] = updated_product
-	json_resp, err := generateResponse(resp)
-	if err != nil {
-		log.Printf("Could not convert product id %v into JSON", updated_product.ID)
-		http.Error(w, http.StatusText(http.StatusUnprocessableEntity), http.StatusUnprocessableEntity)
+	writeResponse(resp, w, http.StatusOK)
+}
+
+func writeResponse(resp map[string]any, w http.ResponseWriter, status_code int) {
+	json_resp, err := json.Marshal(resp)
+	if (err != nil) {
+		log.Printf("Error occured in JSON marshal. Err %s\n", err)
+		http.Error(w, http.StatusText(http.StatusBadGateway), http.StatusBadGateway)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(status_code)
 	w.Write(json_resp)
-}
-
-func generateResponse(resp map[string]any) ([]byte, error){
-	json_resp, err := json.Marshal(resp)
-	if (err != nil) {
-		log.Printf("Error occured in JSON marshal. Err: %s\n", err)
-		return nil, errors.New("could not marshal JSON response")
-	}
-	return json_resp, nil
 }
 
 func ProductsCtx(next http.Handler) http.Handler {
@@ -156,7 +127,7 @@ func ProductsCtx(next http.Handler) http.Handler {
 		product, err := product_repository.GetProduct(product_id)
 		if err != nil {
 			log.Printf("Could not retrieve product ID: %v", product_id)
-			http.Error(w, http.StatusText(404), 404)
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 			return
 		}
 		ctx := context.WithValue(r.Context(), "product", &product)
