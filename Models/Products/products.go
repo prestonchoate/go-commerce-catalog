@@ -23,7 +23,7 @@ func GetAll() ([]models.Product, error) {
 	var products []models.Product
 	for rows.Next() {
 		var product models.Product
-		product, err := mapProductData(rows, &product)
+		err := mapProductData(rows, &product)
 		if err != nil {
 			log.Print(err.Error())
 			return products, fmt.Errorf("could not parse rows into products")
@@ -38,7 +38,7 @@ func GetProduct(product_id int) (models.Product, error) {
 	query := fmt.Sprintf("SELECT * FROM %v WHERE id = %v", TABLE_NAME, product_id)
 	row := db.QueryRow(query)
 	var product models.Product
-	product, err := mapProductData(row, &product)
+	err := mapProductData(row, &product)
 	if err != nil {
 		log.Print(err.Error())
 		return product, fmt.Errorf("failed to retrieve product with ID: %v", product_id)
@@ -51,7 +51,7 @@ func GetProductBySku(sku string) (models.Product, error) {
 	query := fmt.Sprintf("SELECT * FROM %v WHERE sku = \"%v\"", TABLE_NAME, sku)
 	row := db.QueryRow(query)
 	var product models.Product
-	product, err := mapProductData(row, &product)
+	err := mapProductData(row, &product)
 	if err != nil {
 		log.Print(err.Error())
 		return product, fmt.Errorf("failed to retrieve product with SKU: %v", sku)
@@ -59,7 +59,7 @@ func GetProductBySku(sku string) (models.Product, error) {
 	return product, nil
 }
 
-func CreateProduct(input_product models.Product) (models.Product, error) {
+func CreateProduct(input_product *models.NewProductRequest) (models.Product, error) {
 	db := services.GetDB()
 	query := fmt.Sprintf(
 		"INSERT INTO %v (sku, name, price, description) VALUES (%v, %v, %v, %v)",
@@ -71,12 +71,12 @@ func CreateProduct(input_product models.Product) (models.Product, error) {
 	)
 	result, err := db.Exec(query)
 	if err != nil {
+		blank_product := &models.Product{}
 		log.Print(err.Error())
-		return input_product, fmt.Errorf("could not create new product")
+		return *blank_product, fmt.Errorf("could not create new product")
 	}
 	new_id, _ := result.LastInsertId()
-	input_product.ID = int(new_id)
-	return input_product, nil
+	return GetProduct(int(new_id))
 }
 
 func DeleteProduct(product *models.Product) error {
@@ -94,7 +94,7 @@ func DeleteProduct(product *models.Product) error {
 	return nil
 }
 
-func UpdateProductById(original_product models.Product, input_product models.Product) (models.Product, error) {
+func UpdateProductById(original_product models.Product, input_product *models.UpdateProductRequest) (models.Product, error) {
 	db := services.GetDB()
 	query := fmt.Sprintf(
 		"UPDATE %v SET sku = \"%v\", name = \"%v\", price = %v, description = \"%v\" WHERE id = %v",
@@ -105,18 +105,16 @@ func UpdateProductById(original_product models.Product, input_product models.Pro
 		input_product.Description,
 		original_product.ID)
 	// TODO: Make this a transaction
-	// TODO: Check result to make sure the updated ID is correct
+	log.Printf("Attempting product update. Full query is: %s", query)
 	_, err := db.Exec(query)
 	if err != nil {
 		log.Print(err.Error())
-		return input_product, fmt.Errorf("could not update product")
+		return original_product, fmt.Errorf("could not update product")
 	}
-	// TODO: This is a bit hacky and probably needs some other solution.
-	// TODO: Updated at time isn't being auto updated in the DB
-	return GetProductBySku(input_product.SKU)
+	return GetProduct(original_product.ID)
 }
 
-func mapProductData(row services.RowScanner, product *models.Product) (models.Product, error) {
+func mapProductData(row services.RowScanner, product *models.Product) ( error) {
 	err := row.Scan(
 		&product.ID,
 		&product.SKU,
@@ -127,7 +125,7 @@ func mapProductData(row services.RowScanner, product *models.Product) (models.Pr
 		&product.UpdatedAt)
 	if err != nil {
 		log.Print(err.Error())
-		return *product, fmt.Errorf("failed to map row data to product")
+		return fmt.Errorf("failed to map row data to product")
 	}
-	return *product, nil
+	return nil
 }

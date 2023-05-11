@@ -29,9 +29,16 @@ func HandlePostProducts(w http.ResponseWriter, r *http.Request) {
 	// validate body contains valid product struct
 	// TODO: this does not currently verify all required fields are present in json body
 	resp := make(map[string]any)
-	var request_product models.Product
+	request_product := &models.NewProductRequest{}
 	err := json.NewDecoder(r.Body).Decode(&request_product)
 	if err != nil {
+		log.Print("Failed to create product")
+		resp["error"] = err.Error()
+		writeResponse(resp, w, http.StatusBadRequest)
+		return
+	}
+	ok := request_product.ValidateProductRequest()
+	if !ok {
 		log.Print("Failed to create product")
 		resp["error"] = err.Error()
 		writeResponse(resp, w, http.StatusBadRequest)
@@ -81,19 +88,27 @@ func HandleDeleteProduct(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func HandleUpdateProduct(w http.ResponseWriter, r *http.Request) {
+func HandlePutProduct(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	original_product, ok := ctx.Value("product").(*models.Product)
 	if !ok {
 		log.Print("Product not found in request context")
 		http.Error(w, http.StatusText(http.StatusUnprocessableEntity), http.StatusUnprocessableEntity)
+		return
 	}
-	var request_product models.Product
+	request_product := &models.UpdateProductRequest{}
 	err := json.NewDecoder(r.Body).Decode(&request_product)
 	if err != nil {
+		log.Print("Failed to parse product update request from body")
+		http.Error(w, http.StatusText(http.StatusUnprocessableEntity) , http.StatusUnprocessableEntity)
+		return
+	}
+	ok = request_product.ValidateProductRequest(original_product)
+	if !ok {
 		log.Print("Could not parse request body as product")
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-	} 
+		return
+	}
 	updated_product, err := product_repository.UpdateProductById(*original_product, request_product)
 	if err != nil {
 		log.Print(err)
