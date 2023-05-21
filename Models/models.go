@@ -5,14 +5,27 @@ import (
 	"time"
 )
 
+type Client struct {
+	ID int `json:"id"`
+	Client_ID string `json:"clientId"`
+	Client_Secret string `json:"clientSecret"`
+	Created_At time.Time `json:"createdAt"`
+	Last_Login_Time time.Time `json:"lastLoginTime"`
+}
+
+type ClientRequest struct {
+	Client_ID string `json:"clientId"`
+	Client_Secret string `json:"clientSecret"`
+}
+
 type Product struct {
 	ID int `json:"id"`
 	SKU string `json:"sku"`
 	Name string `json:"name"`
 	Price float32 `json:"price"`
 	Description string `json:"description"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	Created_At time.Time `json:"createdAt"`
+	Updated_At time.Time `json:"updatedAt"`
 }
 
 type NewProductRequest struct {

@@ -11,18 +11,13 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
-	"github.com/joho/godotenv"
+	client_handler "github.com/prestonchoate/go-commerce-catalog/Handlers/Clients"
 	product_handler "github.com/prestonchoate/go-commerce-catalog/Handlers/Products"
 )
 
 const DEFAULT_PORT = "5000"
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Print("Could not load from .env")
-	}
-
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
@@ -46,13 +41,17 @@ func main() {
 		})
 	})
 
+	r.Route("/clients", func(r chi.Router) {
+		r.Get("/", client_handler.HandleGetAllProducts)
+	})
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = DEFAULT_PORT
 	}
 
 	log.Printf("Starting server on port: %v", port)
-	err = http.ListenAndServe(fmt.Sprintf(":%v", port), r)
+	err := http.ListenAndServe(fmt.Sprintf(":%v", port), r)
 
 	if (errors.Is(err, http.ErrServerClosed)) {
 		fmt.Printf("server closed\n")

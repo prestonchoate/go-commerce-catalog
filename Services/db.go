@@ -6,6 +6,7 @@ import (
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
 )
 
 type RowScanner interface {
@@ -13,6 +14,13 @@ type RowScanner interface {
 }
 
 var db_conn *sql.DB
+
+func init() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Print("Could not load from .env")
+	}
+}
 
 func GetDB() *sql.DB {
 	var err error

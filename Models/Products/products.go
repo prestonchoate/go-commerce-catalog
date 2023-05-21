@@ -8,6 +8,10 @@ import (
 	services "github.com/prestonchoate/go-commerce-catalog/Services"
 )
 
+// TODO: Convert this repository to use a generic storage interface instead of the db service directly
+
+// TODO: Add table creation to init() function
+
 const TABLE_NAME = "products"
 
 func GetAll() ([]models.Product, error) {
@@ -121,8 +125,8 @@ func mapProductData(row services.RowScanner, product *models.Product) ( error) {
 		&product.Name,
 		&product.Price,
 		&product.Description,
-		&product.CreatedAt,
-		&product.UpdatedAt)
+		&product.Created_At,
+		&product.Updated_At)
 	if err != nil {
 		log.Print(err.Error())
 		return fmt.Errorf("failed to map row data to product")
